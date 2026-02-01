@@ -2,20 +2,16 @@
 
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import AddSignButton from "./AddSignButton";
-import SuggestLocationButton from "./SuggestLocationButton";
 import { cn } from "@/lib/utils";
 
 export default function Header({
   onAddSignSuccess,
-  onSuggestSuccess,
   isAuthenticated,
 }: {
   onAddSignSuccess?: () => void;
-  onSuggestSuccess?: () => void;
   isAuthenticated: boolean;
 }) {
   const router = useRouter();
@@ -27,6 +23,8 @@ export default function Header({
     router.refresh();
   }
 
+  const DONATE_URL = "https://lwvbayareatx.org/content.aspx?page_id=301&club_id=279524";
+
   const buttonClass = cn(
     "min-h-[40px] touch-manipulation sm:min-h-0 h-7 px-2 text-xs sm:h-8 sm:px-3 sm:text-sm",
     "bg-[#bb29bb] border-2 border-[#bb29bb] text-white",
@@ -37,7 +35,7 @@ export default function Header({
     <header className="flex flex-row items-start gap-4 border-b border-primary/20 bg-primary px-4 py-3 text-primary-foreground">
       <div className="flex shrink-0 items-center">
         <Image
-          src="/Vote411-logo_web_darkbg_small.png"
+          src="/Vote411-logo_web_darkbg_tagline_small.png"
           alt="League of Women Voters of the Bay Area (Texas)"
           width={240}
           height={80}
@@ -45,10 +43,25 @@ export default function Header({
         />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="text-right">
-          <h1 className="text-sm font-semibold text-primary-foreground sm:text-base">
-            League of Women Voters of the Bay Area (Texas)
-          </h1>
+        <div className="flex flex-col items-end gap-2">
+          <Image
+            src="/LWVBayArea_wite.png"
+            alt="League of Women Voters of the Bay Area (Texas)"
+            width={200}
+            height={80}
+            className="h-10 w-auto sm:h-12 max-w-full object-contain"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            asChild
+            className="h-7 min-h-[28px] px-2 text-xs sm:h-8 sm:px-3 sm:text-sm bg-[#bb29bb] border-2 border-[#bb29bb] text-white hover:bg-[#8b1a8b] hover:border-[#8b1a8b] hover:text-white"
+          >
+            <a href={DONATE_URL} target="_blank" rel="noopener noreferrer">
+              Donate
+            </a>
+          </Button>
         </div>
         <div className="flex flex-wrap justify-end gap-2 sm:gap-3">
         {isAuthenticated ? (
@@ -61,22 +74,10 @@ export default function Header({
               onClick={signOut}
               className={cn(buttonClass, "font-medium")}
             >
-              Sign out
+              Log out
             </Button>
           </>
-        ) : (
-          <>
-            <SuggestLocationButton onSuccess={onSuggestSuccess} className={buttonClass} />
-            <Button
-              variant="outline"
-              size="default"
-              asChild
-              className={cn(buttonClass, "font-medium")}
-            >
-              <Link href="/login">Sign in</Link>
-            </Button>
-          </>
-        )}
+        ) : null}
         </div>
       </div>
     </header>

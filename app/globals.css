@@ -14,6 +14,12 @@
   border: none !important;
 }
 
+/* Adopted marker: no default Leaflet icon chrome */
+.adopted-marker-icon.leaflet-marker-icon {
+  background: none !important;
+  border: none !important;
+}
+
 /* Custom placemarker: preserve 254×158 aspect ratio so it never looks squashed */
 .vote-marker-icon.leaflet-marker-icon img {
   object-fit: contain;

@@ -21,3 +21,11 @@ export const suggestionIcon = L.divIcon({
   iconSize: [24, 24],
   iconAnchor: [12, 12],
 });
+
+/** Icon for adopt-a-sign submissions. */
+export const adoptedIcon = L.divIcon({
+  className: "adopted-marker-icon",
+  html: '<div style="width:24px;height:24px;border:3px solid #6e6da9;border-radius:50%;background:rgba(110,109,169,0.4);"></div>',
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});

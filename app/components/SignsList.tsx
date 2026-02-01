@@ -1,10 +1,17 @@
 "use client";
 
-import type { SignSuggestion, SignWithPlacer } from "@/lib/db/types";
-import { MapPin } from "lucide-react";
+import type { AdoptASignSubmission, SignReport, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
+import { AlertTriangle, HeartHandshake, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+
+function formatReportDate(iso: string) {
+  return new Date(iso).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 function getDirectionsUrl(lat: number, lng: number): string {
   const isApple =
@@ -23,55 +30,55 @@ export default function SignsList({
   onSignClick,
   onSuggestionClick,
   onConvertSuggestion,
+  onDeleteSuggestion,
+  onDeleteSign,
+  onReportIssue,
+  reportsBySign = {},
+  adoptSubmissions = [],
+  onAdoptedClick,
   canMarkTakenDown = false,
 }: {
   signs: SignWithPlacer[];
   suggestions?: SignSuggestion[];
+  adoptSubmissions?: AdoptASignSubmission[];
   onMarkTakenDown: (sign: SignWithPlacer) => void;
   onSignClick?: (sign: SignWithPlacer) => void;
   onSuggestionClick?: (suggestion: SignSuggestion) => void;
   onConvertSuggestion?: (suggestion: SignSuggestion) => void;
+  onDeleteSuggestion?: (suggestion: SignSuggestion) => void;
+  onDeleteSign?: (sign: SignWithPlacer) => void;
+  onReportIssue?: (sign: SignWithPlacer) => void;
+  reportsBySign?: Record<string, SignReport[]>;
+  onAdoptedClick?: (adopted: AdoptASignSubmission) => void;
   canMarkTakenDown?: boolean;
 }) {
-  const buttonClass = cn(
-    "h-8 min-h-[32px] touch-manipulation px-2 text-xs",
-    "bg-[#bb29bb] border-2 border-[#bb29bb] text-white",
-    "hover:bg-[#0a3a5a] hover:border-[#bb29bb] hover:text-white"
-  );
-
-  const hasItems = signs.length > 0 || suggestions.length > 0;
+  const hasItems = signs.length > 0 || suggestions.length > 0 || adoptSubmissions.length > 0;
   if (!hasItems) {
     return (
       <Card className="border-border bg-primary text-primary-foreground">
-        <CardContent className="px-2 py-1 text-center text-xs text-primary-foreground/80">
-          No signs yet. Sign in to add one, or suggest a location.
+        <CardContent className="px-2 py-0.5 text-center text-xs text-primary-foreground/80">
+          No signs yet. Log in to add one, suggest a location, or adopt a sign.
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className="space-y-0.5">
       {signs.map((sign) => {
         const isUp = !sign.taken_down_at;
+        const signReports = reportsBySign[sign.id] ?? [];
+        const hasReports = signReports.length > 0;
         return (
           <li key={sign.id}>
-            <Card className="border-border bg-primary text-primary-foreground shadow-sm">
-              <CardContent className="cursor-pointer px-2 py-1" onClick={() => onSignClick?.(sign)}>
-                <div className="flex gap-1.5">
-                  {sign.photo_url ? (
-                    <img
-                      src={sign.photo_url}
-                      alt="Sign"
-                      className="h-10 w-10 shrink-0 rounded object-cover"
-                    />
-                  ) : (
-                    <img
-                      src="/Vote411-logo_darkbg_twitter.png"
-                      alt="Vote411"
-                      className="h-10 w-10 shrink-0 rounded object-contain"
-                    />
-                  )}
+            <Card className="border-border bg-primary text-primary-foreground shadow-sm py-0.5">
+              <CardContent className="cursor-pointer px-2 py-0.5" onClick={() => onSignClick?.(sign)}>
+                <div className="flex gap-1.5 items-center">
+                  <img
+                    src="/Vote411-logo_darkbg_twitter.png"
+                    alt="Vote411"
+                    className="h-10 w-10 shrink-0 rounded object-contain"
+                  />
                   <div className="min-w-0 flex-1">
                     {(sign.zipcode || sign.county || sign.nearest_intersection) && (
                       <div className="text-sm text-primary-foreground/80">
@@ -96,13 +103,45 @@ export default function SignsList({
                         {sign.notes}
                       </p>
                     )}
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {canMarkTakenDown && (
+                    {canMarkTakenDown && hasReports && (
+                      <div className="mt-1 space-y-0.5">
+                        <div className="inline-flex items-center gap-1 rounded bg-amber-500/20 px-1.5 py-0.5 text-xs text-amber-200">
+                          <AlertTriangle className="size-3" aria-hidden />
+                          <span>Needs attention</span>
+                        </div>
+                        <div className="space-y-0.5 text-xs text-primary-foreground/80">
+                          {signReports.map((r) => (
+                            <p key={r.id} className="line-clamp-2">
+                              {r.comment} – {formatReportDate(r.created_at)}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="shrink-0 flex flex-col gap-1 items-end" onClick={(e) => e.stopPropagation()}>
+                    {onReportIssue && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReportIssue(sign);
+                        }}
+                        className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] text-[#0a3a5a] bg-white/90 border-[#0a3a5a] hover:bg-white hover:border-[#0a3a5a]"
+                      >
+                        <AlertTriangle className="size-2.5 shrink-0" aria-hidden />
+                        <span className="ml-0.5 truncate">Report issue</span>
+                      </Button>
+                    )}
+                    {canMarkTakenDown && (
+                      <>
                         <Button
                           variant="outline"
                           size="sm"
                           asChild
-                          className="h-8 min-h-[32px] touch-manipulation px-2 text-xs text-[#0a3a5a]"
+                          className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] text-[#0a3a5a] bg-white/90 border-[#0a3a5a] hover:bg-white hover:border-[#0a3a5a]"
                         >
                           <a
                             href={getDirectionsUrl(sign.latitude, sign.longitude)}
@@ -113,27 +152,39 @@ export default function SignsList({
                             Directions
                           </a>
                         </Button>
-                      )}
-                      {isUp && canMarkTakenDown && (
+                        {isUp ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onMarkTakenDown(sign);
+                            }}
+                            className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] bg-[#bb29bb] border-[#bb29bb] text-white hover:bg-[#0a3a5a] hover:border-[#bb29bb] hover:text-white"
+                          >
+                            Mark down
+                          </Button>
+                        ) : (
+                          <span className="inline-flex h-6 min-h-[24px] w-full min-w-[100px] items-center justify-center rounded border border-primary-foreground/30 bg-primary-foreground/20 px-1.5 text-[11px] text-primary-foreground">
+                            Taken down
+                          </span>
+                        )}
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            onMarkTakenDown(sign);
+                            onDeleteSign?.(sign);
                           }}
-                          className={buttonClass}
+                          className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] text-destructive bg-white/90 border-destructive hover:bg-white hover:text-destructive"
                         >
-                          Mark down
+                          <Trash2Icon className="size-2.5 shrink-0" aria-hidden />
+                          <span className="ml-0.5 truncate">Delete</span>
                         </Button>
-                      )}
-                      {!isUp && (
-                        <span className="inline-flex items-center rounded bg-primary-foreground/20 px-1.5 py-0.5 text-xs text-primary-foreground">
-                          Taken down
-                        </span>
-                      )}
-                    </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -143,20 +194,22 @@ export default function SignsList({
       })}
       {suggestions.map((suggestion) => (
         <li key={suggestion.id}>
-          <Card className="border-border bg-[#b6c9d4] text-foreground shadow-sm">
+          <Card className="border-border bg-[#6e6da9] text-white shadow-sm py-0.5">
             <CardContent
-              className="cursor-pointer px-2 py-1"
+              className="cursor-pointer px-2 py-0.5"
               onClick={() => onSuggestionClick?.(suggestion)}
             >
-              <div className="flex gap-1.5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-dashed border-foreground/30 bg-foreground/10">
-                  <MapPin className="size-5 text-foreground/70" />
-                </div>
+              <div className="flex gap-1.5 items-center">
+                <img
+                  src="/Vote411-logo_darkbg_twitter.png"
+                  alt="Vote411"
+                  className="h-10 w-10 shrink-0 rounded object-contain"
+                />
                 <div className="min-w-0 flex-1">
                   {(suggestion.zipcode ||
                     suggestion.county ||
                     suggestion.nearest_intersection) ? (
-                    <div className="text-sm text-foreground/80">
+                    <div className="text-sm text-white/90">
                       {(suggestion.zipcode || suggestion.county) && (
                         <p>
                           {[suggestion.zipcode, suggestion.county]
@@ -177,51 +230,106 @@ export default function SignsList({
                       )}
                     </div>
                   ) : (
-                    <p className="text-sm text-foreground/80">
+                    <p className="text-sm text-white/90">
                       Suggested location
                     </p>
                   )}
                   {canMarkTakenDown && suggestion.notes && (
-                    <p className="mt-0.5 text-xs text-foreground/80 line-clamp-1">
+                    <p className="mt-0.5 text-xs text-white/90 line-clamp-1">
                       {suggestion.notes}
                     </p>
                   )}
-                  <div className="mt-1 flex flex-wrap gap-1.5">
-                    {canMarkTakenDown && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                          className="h-8 min-h-[32px] touch-manipulation px-2 text-xs text-[#0a3a5a]"
-                        >
-                          <a
-                            href={getDirectionsUrl(
-                              suggestion.latitude,
-                              suggestion.longitude
-                            )}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Directions
-                          </a>
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onConvertSuggestion?.(suggestion);
-                          }}
-                          className={buttonClass}
-                        >
-                          Convert to sign
-                        </Button>
-                      </>
-                    )}
+                </div>
+                {canMarkTakenDown && (
+                  <div className="shrink-0 flex flex-col gap-1 items-end" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] text-[#0a3a5a] bg-white/90 border-[#0a3a5a] hover:bg-white hover:border-[#0a3a5a]"
+                    >
+                      <a
+                        href={getDirectionsUrl(
+                          suggestion.latitude,
+                          suggestion.longitude
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Directions
+                      </a>
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onConvertSuggestion?.(suggestion);
+                      }}
+                      className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] bg-[#bb29bb] border-[#bb29bb] text-white hover:bg-[#0a3a5a] hover:border-[#bb29bb] hover:text-white"
+                    >
+                      Convert to sign
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDeleteSuggestion?.(suggestion);
+                      }}
+                      className="h-6 min-h-[24px] w-full min-w-[100px] touch-manipulation px-1.5 text-[11px] text-destructive bg-white/90 border-destructive hover:bg-white hover:text-destructive"
+                    >
+                      <Trash2Icon className="size-2.5 shrink-0" aria-hidden />
+                      <span className="ml-0.5 truncate">Delete</span>
+                    </Button>
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </li>
+      ))}
+      {adoptSubmissions.map((adopted) => (
+        <li key={adopted.id}>
+          <Card className="border-border bg-[#6e6da9] text-white shadow-sm py-0.5">
+            <CardContent
+              className="cursor-pointer px-2 py-0.5"
+              onClick={() => onAdoptedClick?.(adopted)}
+            >
+              <div className="flex gap-1.5 items-center">
+                <img
+                  src="/Vote411-logo_darkbg_twitter.png"
+                  alt="Vote411"
+                  className="h-10 w-10 shrink-0 rounded object-contain"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="inline-flex items-center gap-1 rounded bg-white/20 px-1.5 py-0.5 text-xs text-white mb-1">
+                    <HeartHandshake className="size-3" aria-hidden />
+                    <span>Adopted</span>
+                  </div>
+                  {(adopted.zipcode || adopted.county || adopted.nearest_intersection) ? (
+                    <div className="text-sm text-white/90">
+                      {(adopted.zipcode || adopted.county) && (
+                        <p>
+                          {[adopted.zipcode, adopted.county].filter(Boolean).join(", ")}
+                        </p>
+                      )}
+                      {adopted.nearest_intersection && (
+                        <p
+                          className={
+                            adopted.zipcode || adopted.county ? "mt-0.5" : ""
+                          }
+                        >
+                          {adopted.nearest_intersection}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-white/90">Adopted location</p>
+                  )}
                 </div>
               </div>
             </CardContent>

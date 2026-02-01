@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { reverseGeocode } from "@/lib/utils/reverseGeocode";
 import { getOrCreateDefaultCampaignForUser } from "@/lib/actions/campaigns";
-import type { Sign, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
+import type { AdoptASignSubmission, Sign, SignReport, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
 
 export type SignFilter = "all" | "up" | "down";
 
@@ -127,6 +127,92 @@ export async function markSignTakenDown(
   return { ok: true };
 }
 
+export async function updateSignPhoto(
+  signId: string,
+  photoUrl: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not signed in" };
+
+  const { error } = await supabase
+    .from("signs")
+    .update({ photo_url: photoUrl })
+    .eq("id", signId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function deleteSign(
+  signId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not signed in" };
+
+  const { error } = await supabase.from("signs").delete().eq("id", signId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+export async function deleteSignSuggestion(
+  suggestionId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not signed in" };
+
+  const { error } = await supabase
+    .from("sign_suggestions")
+    .delete()
+    .eq("id", suggestionId);
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** Report an issue on a sign (no auth required). */
+export async function createSignReport(
+  signId: string,
+  comment: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const trimmed = comment.trim();
+  if (!trimmed) return { ok: false, error: "Comment is required" };
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { error } = await supabase.from("sign_reports").insert({
+    sign_id: signId,
+    comment: trimmed,
+    reported_by_user_id: user?.id ?? null,
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** Fetch all sign reports (auth required). */
+export async function getSignReports(): Promise<SignReport[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("sign_reports")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (data ?? []) as SignReport[];
+}
+
 /** Create a sign suggestion (no auth required). */
 export async function createSignSuggestion(params: {
   latitude: number;
@@ -208,4 +294,54 @@ export async function getSignSuggestions(): Promise<SignSuggestion[]> {
     .select("*")
     .order("created_at", { ascending: false });
   return (data ?? []) as SignSuggestion[];
+}
+
+/** Create an adopt-a-sign submission (no auth required). */
+export async function createAdoptASignSubmission(params: {
+  name: string;
+  email?: string;
+  phone?: string;
+  latitude: number;
+  longitude: number;
+  notes?: string;
+}): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const name = params.name.trim();
+  if (!name) return { ok: false, error: "Name is required" };
+  const email = params.email?.trim() || null;
+  const phone = params.phone?.trim() || null;
+  if (!email && !phone) return { ok: false, error: "Email or phone is required" };
+
+  const supabase = await createClient();
+  const { nearestIntersection, zipcode, county } = await reverseGeocode(
+    params.latitude,
+    params.longitude
+  );
+  const { data, error } = await supabase
+    .from("adopt_a_sign_submissions")
+    .insert({
+      name,
+      email,
+      phone,
+      latitude: params.latitude,
+      longitude: params.longitude,
+      notes: params.notes?.trim() || null,
+      nearest_intersection: nearestIntersection,
+      zipcode,
+      county,
+    })
+    .select("id")
+    .single();
+
+  if (error || !data) return { ok: false, error: error?.message ?? "Failed to submit adoption" };
+  return { ok: true, id: data.id };
+}
+
+/** Fetch all adopt-a-sign submissions (no auth required). */
+export async function getAdoptASignSubmissions(): Promise<AdoptASignSubmission[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("adopt_a_sign_submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+  return (data ?? []) as AdoptASignSubmission[];
 }

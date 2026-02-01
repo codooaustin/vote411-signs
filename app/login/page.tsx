@@ -38,7 +38,7 @@ export default function LoginPage() {
       }
       setMessage({
         type: "success",
-        text: "Account created. Sign in below.",
+        text: "Account created. Log in below.",
       });
       setMode("signin");
       setPassword("");
@@ -60,7 +60,7 @@ export default function LoginPage() {
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center">
             <Image
-              src="/Vote411-logo_web_darkbg_small.png"
+              src="/Vote411-logo_web_darkbg_tagline_small.png"
               alt="Vote411 Signs"
               width={160}
               height={53}
@@ -69,7 +69,7 @@ export default function LoginPage() {
           </div>
           <CardTitle className="text-xl text-foreground">Vote411 Signs</CardTitle>
           <CardDescription>
-            Sign in to track signage around the Bay Area (Texas)
+            Log in to track signage around the Bay Area (Texas)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,7 +111,7 @@ export default function LoginPage() {
               />
             </div>
             <Button type="submit" disabled={loading} className="w-full">
-              {loading ? "Please wait…" : mode === "signup" ? "Create account" : "Sign in"}
+              {loading ? "Please wait…" : mode === "signup" ? "Create account" : "Log in"}
             </Button>
           </form>
           <p className="mt-4 text-center text-sm text-muted-foreground">
@@ -134,7 +134,7 @@ export default function LoginPage() {
                   onClick={() => setMode("signin")}
                   className="font-medium text-primary hover:underline"
                 >
-                  Sign in
+                  Log in
                 </button>
               </>
             )}

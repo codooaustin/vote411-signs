@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import SuggestLocationModal from "./SuggestLocationModal";
+import AdoptASignModal from "./AdoptASignModal";
 import { cn } from "@/lib/utils";
 
-export default function SuggestLocationButton({
+export default function AdoptASignButton({
   onSuccess,
   className,
 }: {
@@ -23,9 +23,9 @@ export default function SuggestLocationButton({
         onClick={() => setOpen(true)}
         className={cn("font-medium", className)}
       >
-        Suggest sign location
+        Adopt a sign
       </Button>
-      <SuggestLocationModal
+      <AdoptASignModal
         open={open}
         onClose={() => setOpen(false)}
         onSuccess={() => {

@@ -19,6 +19,8 @@ import { cn } from "@/lib/utils";
 
 const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false });
 
+const DONATE_URL = "https://lwvbayareatx.org/content.aspx?page_id=301&club_id=279524";
+
 export default function SuggestLocationModal({
   open,
   onClose,
@@ -79,6 +81,10 @@ export default function SuggestLocationModal({
       }
     );
   }, []);
+
+  const handleDonate = () => {
+    window.open(DONATE_URL, "_blank", "noopener,noreferrer");
+  };
 
   const handleSubmit = async () => {
     if (!position) {
@@ -150,7 +156,7 @@ export default function SuggestLocationModal({
           />
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-wrap gap-2 pt-2">
           <Button
             type="button"
             variant="outline"
@@ -169,7 +175,15 @@ export default function SuggestLocationModal({
             disabled={loading || !position}
             className={cn(buttonClass, !position && "opacity-50")}
           >
-            {loading ? "Submitting…" : "Suggest location"}
+            {loading ? "Submitting…" : "Suggest sign location"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleDonate}
+            className="flex-1 min-h-[44px] touch-manipulation text-xs sm:text-sm px-2 sm:px-3 bg-[#6e6da9] border-2 border-[#6e6da9] text-white hover:bg-[#6e6da9]/90 hover:border-[#6e6da9]"
+          >
+            Donate instead
           </Button>
           <Button
             type="button"

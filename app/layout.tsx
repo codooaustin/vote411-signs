@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Vote411 Signs",
   description: "Track election signage around League City, TX",
-  icons: [{ rel: "icon", url: "/Vote411-logo_web_darkbg_small.png" }],
+  icons: [{ rel: "icon", url: "/Vote411-logo_web_darkbg_tagline_small.png" }],
 };
 
 export const viewport: Viewport = {
