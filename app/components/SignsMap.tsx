@@ -155,6 +155,21 @@ export default function SignsMap({
                     Placed by {sign.placed_by_email}
                   </p>
                 )}
+                {sign.photo_url && (
+                  <a
+                    href={sign.photo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 block w-full rounded border border-border overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={sign.photo_url}
+                      alt="Sign"
+                      className="w-full h-auto object-contain"
+                    />
+                  </a>
+                )}
                 <div className="mt-2 flex flex-wrap gap-1">
                   {onReportIssue && (
                     <Button
@@ -173,21 +188,6 @@ export default function SignsMap({
                   )}
                 {canEditSigns && (
                   <>
-                    {sign.photo_url && (
-                      <a
-                        href={sign.photo_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 block w-full rounded border border-border overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <img
-                          src={sign.photo_url}
-                          alt="Sign"
-                          className="w-full h-auto object-contain"
-                        />
-                      </a>
-                    )}
                     <Button
                       type="button"
                       variant="outline"
