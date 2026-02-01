@@ -111,7 +111,10 @@ export default function SuggestLocationModal({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="flex flex-col h-[95vh] sm:max-w-2xl bg-[#eef4f8] text-foreground border-border p-4">
+      <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="flex flex-col overflow-y-auto max-h-[90dvh] sm:max-w-2xl bg-[#eef4f8] text-foreground border-border p-4"
+      >
         <DialogHeader className="pb-2">
           <DialogTitle>Suggest a location</DialogTitle>
         </DialogHeader>
@@ -126,7 +129,7 @@ export default function SuggestLocationModal({
           </p>
         )}
 
-        <div className="flex-1 min-h-[500px] sm:min-h-[600px]">
+        <div className="min-h-[220px] sm:min-h-[380px] shrink-0">
           <MapPicker
             position={position}
             onPositionChange={(lat, lng) => setPosition([lat, lng])}
