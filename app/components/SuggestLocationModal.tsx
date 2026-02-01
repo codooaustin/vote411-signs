@@ -129,7 +129,7 @@ export default function SuggestLocationModal({
           </p>
         )}
 
-        <div className="min-h-[220px] sm:min-h-[380px] shrink-0">
+        <div className="h-[220px] sm:h-[380px] shrink-0">
           <MapPicker
             position={position}
             onPositionChange={(lat, lng) => setPosition([lat, lng])}
