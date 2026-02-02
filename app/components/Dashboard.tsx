@@ -101,9 +101,9 @@ export default function Dashboard() {
               </div>
             ) : (
               <SignsMap
-                signs={signsStillUp}
-                suggestions={suggestions}
-                adoptSubmissions={adoptSubmissions}
+                signs={filteredSigns}
+                suggestions={filteredSuggestions}
+                adoptSubmissions={filteredAdopted}
                 centerOn={centerOnSign}
                 showSuggestionNotes={isAuthenticated}
                 canEditSigns={isAuthenticated}
