@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getSignsPublic, getSignReports, getSignSuggestions, getAdoptASignSubmissions } from "@/lib/actions/signs";
+import { getAppConfig } from "@/lib/actions/config";
+import type { MapClusterConfig } from "@/lib/db/types";
 import type { AdoptASignSubmission, SignReport, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
 import ReportIssueModal from "./ReportIssueModal";
 import dynamic from "next/dynamic";
@@ -31,21 +33,26 @@ export default function Dashboard() {
     lat: number;
     lng: number;
   } | null>(null);
+  const [mapClusterConfig, setMapClusterConfig] =
+    useState<MapClusterConfig | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    const [signsData, suggestionsData, adoptData, reportsData] = await Promise.all([
-      getSignsPublic("up"),
-      getSignSuggestions(),
-      getAdoptASignSubmissions(),
-      createClient().auth.getUser().then(({ data: { user } }) =>
-        user ? getSignReports() : Promise.resolve([] as SignReport[])
-      ),
-    ]);
+    const [signsData, suggestionsData, adoptData, reportsData, clusterConfig] =
+      await Promise.all([
+        getSignsPublic("up"),
+        getSignSuggestions(),
+        getAdoptASignSubmissions(),
+        createClient().auth.getUser().then(({ data: { user } }) =>
+          user ? getSignReports() : Promise.resolve([] as SignReport[])
+        ),
+        getAppConfig(),
+      ]);
     setSigns(signsData);
     setSuggestions(suggestionsData);
     setAdoptSubmissions(adoptData);
     setSignReports(reportsData);
+    setMapClusterConfig(clusterConfig);
     setLoading(false);
   }, []);
 
@@ -102,6 +109,7 @@ export default function Dashboard() {
                 canEditSigns={isAuthenticated}
                 onRefresh={loadData}
                 onReportIssue={(sign) => setReportIssueSign(sign)}
+                clusterConfig={mapClusterConfig ?? undefined}
               />
             )}
             </div>

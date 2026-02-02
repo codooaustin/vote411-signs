@@ -1,3 +1,10 @@
+export type MapClusterConfig = {
+  clusteringEnabled: boolean;
+  maxClusterRadius: number;
+  disableClusteringAtZoom: number;
+  defaultMapZoom: number;
+};
+
 export type Campaign = {
   id: string;
   name: string;

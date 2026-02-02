@@ -4,8 +4,8 @@ import { MapContainer, Marker, TileLayer, Popup, useMap } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import { markerIcon, suggestionIcon, adoptedIcon } from "@/lib/mapMarker";
 import { LEAGUE_CITY_CENTER, DEFAULT_ZOOM } from "./Map";
-import type { AdoptASignSubmission, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import type { AdoptASignSubmission, MapClusterConfig, SignSuggestion, SignWithPlacer } from "@/lib/db/types";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { compressImage } from "@/lib/utils/compressImage";
 import { updateSignPhoto, deleteSign, deleteSignSuggestion } from "@/lib/actions/signs";
@@ -36,6 +36,7 @@ export default function SignsMap({
   canEditSigns = false,
   onRefresh,
   onReportIssue,
+  clusterConfig,
 }: {
   signs: SignWithPlacer[];
   suggestions?: SignSuggestion[];
@@ -46,6 +47,7 @@ export default function SignsMap({
   canEditSigns?: boolean;
   onRefresh?: () => void;
   onReportIssue?: (sign: SignWithPlacer) => void;
+  clusterConfig?: MapClusterConfig;
 }) {
   const stillUp = signs.filter((s) => !s.taken_down_at);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,10 +114,98 @@ export default function SignsMap({
     [onRefresh]
   );
 
+  const signMarkers = stillUp.map((sign) => (
+    <Marker
+      key={sign.id}
+      position={[sign.latitude, sign.longitude]}
+      icon={markerIcon}
+      eventHandlers={{
+        click: () => onSignClick?.(sign),
+      }}
+    >
+      <Popup>
+        <div className="min-w-[200px]" onClick={(e) => e.stopPropagation()}>
+          {sign.notes && (
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {sign.notes}
+            </p>
+          )}
+          {sign.placed_by_email && (
+            <p className="mt-1 text-xs text-zinc-500">
+              Placed by {sign.placed_by_email}
+            </p>
+          )}
+          {sign.photo_url && (
+            <a
+              href={sign.photo_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block w-full rounded border border-border overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={sign.photo_url}
+                alt="Sign"
+                className="w-full h-auto object-contain"
+              />
+            </a>
+          )}
+          <div className="mt-2 flex flex-wrap gap-1">
+            {onReportIssue && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReportIssue(sign);
+                }}
+                className="h-6 px-1.5 text-[11px] text-foreground border-foreground/30"
+              >
+                <AlertCircle className="size-2.5" aria-hidden />
+                <span className="ml-0.5">Report issue</span>
+              </Button>
+            )}
+            {canEditSigns && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddPhotoClick(sign.id);
+                  }}
+                  className="h-7 px-2 text-xs"
+                >
+                  <CameraIcon className="size-3" aria-hidden />
+                  <span className="ml-1">Add photo</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(sign.id);
+                  }}
+                  className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                >
+                  <Trash2Icon className="size-3" aria-hidden />
+                  <span className="ml-1">Delete</span>
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      </Popup>
+    </Marker>
+  ));
+
   return (
     <MapContainer
       center={LEAGUE_CITY_CENTER}
-      zoom={DEFAULT_ZOOM}
+      zoom={clusterConfig?.defaultMapZoom ?? DEFAULT_ZOOM}
       className="h-full w-full min-h-[400px]"
       scrollWheelZoom
     >
@@ -133,95 +223,16 @@ export default function SignsMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <MarkerClusterGroup>
-        {stillUp.map((sign) => (
-          <Marker
-            key={sign.id}
-            position={[sign.latitude, sign.longitude]}
-            icon={markerIcon}
-            eventHandlers={{
-              click: () => onSignClick?.(sign),
-            }}
-          >
-            <Popup>
-              <div className="min-w-[200px]" onClick={(e) => e.stopPropagation()}>
-                {sign.notes && (
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {sign.notes}
-                  </p>
-                )}
-                {sign.placed_by_email && (
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Placed by {sign.placed_by_email}
-                  </p>
-                )}
-                {sign.photo_url && (
-                  <a
-                    href={sign.photo_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 block w-full rounded border border-border overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img
-                      src={sign.photo_url}
-                      alt="Sign"
-                      className="w-full h-auto object-contain"
-                    />
-                  </a>
-                )}
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {onReportIssue && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onReportIssue(sign);
-                      }}
-                      className="h-6 px-1.5 text-[11px] text-foreground border-foreground/30"
-                    >
-                      <AlertCircle className="size-2.5" aria-hidden />
-                      <span className="ml-0.5">Report issue</span>
-                    </Button>
-                  )}
-                {canEditSigns && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddPhotoClick(sign.id);
-                      }}
-                      className="h-7 px-2 text-xs"
-                    >
-                      <CameraIcon className="size-3" aria-hidden />
-                      <span className="ml-1">Add photo</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(sign.id);
-                      }}
-                      className="h-7 px-2 text-xs text-destructive hover:text-destructive"
-                    >
-                      <Trash2Icon className="size-3" aria-hidden />
-                      <span className="ml-1">Delete</span>
-                    </Button>
-                  </>
-                )}
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MarkerClusterGroup>
+      {clusterConfig?.clusteringEnabled === false ? (
+        <Fragment>{signMarkers}</Fragment>
+      ) : (
+        <MarkerClusterGroup
+          maxClusterRadius={clusterConfig?.maxClusterRadius ?? 40}
+          disableClusteringAtZoom={clusterConfig?.disableClusteringAtZoom ?? 15}
+        >
+          {signMarkers}
+        </MarkerClusterGroup>
+      )}
       {suggestions.map((s) => (
         <Marker
           key={s.id}
