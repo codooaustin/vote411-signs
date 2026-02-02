@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vote411 Signs",
+  title: "VOTE411 Signs by LWV Bay Area TX",
   description: "Track election signage around League City, TX",
-  icons: [{ rel: "icon", url: "/Vote411-logo_web_darkbg_tagline_small.png" }],
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
 export const viewport: Viewport = {
