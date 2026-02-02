@@ -88,11 +88,11 @@ export default function Dashboard() {
   const filteredAdopted = showAdopted ? adoptSubmissions : [];
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#eef4f8] font-sans">
+    <div className="flex h-screen flex-col overflow-hidden bg-[#eef4f8] font-sans">
       <AddToHomeScreenHint />
       <Header onAddSignSuccess={loadData} isAuthenticated={isAuthenticated} />
-      <main className="flex min-h-0 flex-1 flex-col p-4">
-        <div className="grid flex-1 min-h-0 gap-6 lg:grid-cols-[1fr_340px] lg:grid-rows-[1fr]">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
+        <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr_minmax(0,1fr)] gap-6 overflow-hidden lg:grid-cols-[1fr_340px] lg:grid-rows-[1fr]">
           <div className="flex min-h-0 flex-col">
             <div className="min-h-[300px] flex-1 overflow-hidden rounded-xl border border-border bg-card sm:min-h-[400px]">
             {loading ? (
@@ -114,7 +114,7 @@ export default function Dashboard() {
             )}
             </div>
           </div>
-          <div className="flex min-h-0 flex-col">
+          <div className="flex min-h-0 flex-col overflow-hidden">
             {!isAuthenticated && (
               <div className="mb-3 flex flex-wrap gap-2">
                 <SuggestLocationButton
