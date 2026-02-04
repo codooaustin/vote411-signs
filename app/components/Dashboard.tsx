@@ -155,14 +155,14 @@ export default function Dashboard() {
                 </Button>
               </div>
             ) : (
-              <div className="mb-3 flex flex-wrap gap-2">
+              <div className="mb-3 flex flex-nowrap gap-2">
                 <SuggestLocationButton
                   onSuccess={loadData}
-                  className="min-h-[44px] touch-manipulation w-full sm:w-auto bg-[#bb29bb] border-2 border-[#bb29bb] text-white hover:bg-[#8b1a8b] hover:border-[#8b1a8b] hover:text-white"
+                  className="min-h-[44px] touch-manipulation flex-1 min-w-0 bg-[#bb29bb] border-2 border-[#bb29bb] text-white hover:bg-[#8b1a8b] hover:border-[#8b1a8b] hover:text-white"
                 />
                 <AdoptASignButton
                   onSuccess={loadData}
-                  className="min-h-[44px] touch-manipulation w-full sm:w-auto bg-[#6e6da9] border-2 border-[#6e6da9] text-white hover:bg-[#52518a] hover:border-[#52518a] hover:text-white"
+                  className="min-h-[44px] touch-manipulation flex-1 min-w-0 bg-[#6e6da9] border-2 border-[#6e6da9] text-white hover:bg-[#52518a] hover:border-[#52518a] hover:text-white"
                 />
               </div>
             )}
