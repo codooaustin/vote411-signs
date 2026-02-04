@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getSignsPublic, getSignReports, getSignSuggestions, getAdoptASignSubmissions } from "@/lib/actions/signs";
 import { getAppConfig } from "@/lib/actions/config";
 import type { MapClusterConfig } from "@/lib/db/types";
@@ -13,7 +15,9 @@ import Header from "./Header";
 import SignsList from "./SignsList";
 import SuggestLocationButton from "./SuggestLocationButton";
 import AdoptASignButton from "./AdoptASignButton";
+import AddSignButton from "./AddSignButton";
 import AddToHomeScreenHint from "./AddToHomeScreenHint";
+import { cn } from "@/lib/utils";
 
 const SignsMap = dynamic(() => import("./SignsMap"), { ssr: false });
 
@@ -87,10 +91,23 @@ export default function Dashboard() {
   const filteredSuggestions = showSuggested ? suggestions : [];
   const filteredAdopted = showAdopted ? adoptSubmissions : [];
 
+  const router = useRouter();
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+  const buttonClass = cn(
+    "min-h-[40px] touch-manipulation sm:min-h-0 h-7 px-2 text-xs sm:h-8 sm:px-3 sm:text-sm",
+    "bg-[#bb29bb] border-2 border-[#bb29bb] text-white",
+    "hover:bg-[#0a3a5a] hover:border-[#bb29bb] hover:text-white"
+  );
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#eef4f8] font-sans">
       <AddToHomeScreenHint />
-      <Header onAddSignSuccess={loadData} isAuthenticated={isAuthenticated} />
+      <Header />
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden p-4">
         <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr_minmax(0,1fr)] gap-6 overflow-hidden lg:grid-cols-[1fr_340px] lg:grid-rows-[1fr]">
           <div className="flex min-h-0 flex-col">
@@ -115,7 +132,29 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex min-h-0 flex-col overflow-hidden">
-            {!isAuthenticated && (
+            {isAuthenticated ? (
+              <div className="mb-3 flex flex-wrap gap-2">
+                <AddSignButton onSuccess={loadData} className={buttonClass} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className={cn(buttonClass, "font-medium")}
+                >
+                  <Link href="/admin">Admin</Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={signOut}
+                  className={cn(buttonClass, "font-medium")}
+                >
+                  Log out
+                </Button>
+              </div>
+            ) : (
               <div className="mb-3 flex flex-wrap gap-2">
                 <SuggestLocationButton
                   onSuccess={loadData}
