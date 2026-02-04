@@ -42,6 +42,21 @@
   font-family: var(--font-poppins), ui-sans-serif, sans-serif;
 }
 
+/* Signs list scrollbar: track matches site background */
+.signs-list-scroll {
+  scrollbar-color: #c5d4de #eef4f8;
+}
+.signs-list-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.signs-list-scroll::-webkit-scrollbar-track {
+  background: #eef4f8;
+}
+.signs-list-scroll::-webkit-scrollbar-thumb {
+  background: #c5d4de;
+  border-radius: 4px;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

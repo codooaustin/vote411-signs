@@ -217,7 +217,7 @@ export default function Dashboard() {
                 </Button>
               )}
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto">
+            <div className="signs-list-scroll min-h-0 flex-1 overflow-y-auto">
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
               ) : (
