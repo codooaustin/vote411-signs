@@ -166,17 +166,16 @@ export default function Dashboard() {
                 />
               </div>
             )}
-            <hr className="my-3 border-zinc-400" />
             <h2 className="mb-2 font-rift text-base font-bold text-foreground">
               Filters
             </h2>
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div className="mb-3 flex flex-nowrap gap-2">
               <Button
                 type="button"
                 variant={showInstalled ? "default" : "outline"}
                 size="default"
                 onClick={() => setShowInstalled(!showInstalled)}
-                className="min-h-[44px] touch-manipulation"
+                className="min-h-[44px] touch-manipulation flex-1 min-w-0"
               >
                 Installed ({signsStillUp.length})
               </Button>
@@ -185,7 +184,11 @@ export default function Dashboard() {
                 variant={showSuggested ? "default" : "outline"}
                 size="default"
                 onClick={() => setShowSuggested(!showSuggested)}
-                className={`min-h-[44px] touch-manipulation ${showSuggested ? "bg-[#6e6da9] border-[#6e6da9] hover:bg-[#6e6da9]/90 hover:border-[#6e6da9]" : ""}`}
+                className={`min-h-[44px] touch-manipulation flex-1 min-w-0 ${
+                  showSuggested
+                    ? "bg-[#6e6da9] border-[#6e6da9] hover:bg-[#6e6da9]/90 hover:border-[#6e6da9]"
+                    : ""
+                }`}
               >
                 Suggested ({suggestions.length})
               </Button>
@@ -194,7 +197,11 @@ export default function Dashboard() {
                 variant={showAdopted ? "default" : "outline"}
                 size="default"
                 onClick={() => setShowAdopted(!showAdopted)}
-                className={`min-h-[44px] touch-manipulation ${showAdopted ? "bg-[#6e6da9] border-[#6e6da9] hover:bg-[#6e6da9]/90 hover:border-[#6e6da9]" : ""}`}
+                className={`min-h-[44px] touch-manipulation flex-1 min-w-0 ${
+                  showAdopted
+                    ? "bg-[#6e6da9] border-[#6e6da9] hover:bg-[#6e6da9]/90 hover:border-[#6e6da9]"
+                    : ""
+                }`}
               >
                 Adopted ({adoptSubmissions.length})
               </Button>
@@ -204,13 +211,12 @@ export default function Dashboard() {
                   variant={showNeedsAttention ? "default" : "outline"}
                   size="default"
                   onClick={() => setShowNeedsAttention(!showNeedsAttention)}
-                  className="min-h-[44px] touch-manipulation"
+                  className="min-h-[44px] touch-manipulation flex-1 min-w-0"
                 >
                   Needs attention ({signsNeedingAttention.length})
                 </Button>
               )}
             </div>
-            <hr className="mb-3 border-zinc-400" />
             <div className="min-h-0 flex-1 overflow-y-auto">
               {loading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
